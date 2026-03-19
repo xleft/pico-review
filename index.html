@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Pico PRD Review · 文档批注</title>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
@@ -148,7 +151,15 @@ body {
 }
 .annotation-highlight:hover { background: #ffd633; }
 
-/* 选中文字待批注时的临时高亮（覆盖层方式） */
+/* 选中文字待批注时的临时高亮（DOM 方式） */
+.pending-highlight {
+  background: rgba(66, 165, 245, 0.35) !important;
+  border-bottom: 2px solid #1565c0 !important;
+  border-radius: 2px;
+  padding: 1px 0;
+}
+
+/* 选中文字待批注时的临时高亮（overlay 备选方式） */
 #pending-overlay {
   position: absolute;
   top: 0;
@@ -866,43 +877,64 @@ function onTextSelect(e) {
   clearPendingHighlight();
 
   // 保存选区信息
-  const savedRange = range.cloneRange();
-  pendingSelection = { text, range: savedRange };
+  pendingSelection = { text };
 
-  // 用 overlay 方式画高亮（不修改 DOM，100% 可靠）
-  const docArea = document.getElementById('doc-area');
-  const overlay = document.createElement('div');
-  overlay.id = 'pending-overlay';
-
-  // 获取选区的所有矩形（每行一个）
+  // 记录选区位置（用于定位输入框）
   const rects = range.getClientRects();
-  const areaRect = docArea.getBoundingClientRect();
-
-  console.log('[pico-review] overlay: rects count =', rects.length, 'areaRect =', areaRect);
-
   let minTop = Infinity, maxBottom = 0, minLeft = Infinity, maxRight = 0;
   for (let i = 0; i < rects.length; i++) {
     const r = rects[i];
     if (r.width === 0 && r.height === 0) continue;
-    const div = document.createElement('div');
-    div.className = 'hl-rect';
-    const hlLeft = r.left - areaRect.left + docArea.scrollLeft;
-    const hlTop = r.top - areaRect.top + docArea.scrollTop;
-    div.style.left = hlLeft + 'px';
-    div.style.top = hlTop + 'px';
-    div.style.width = r.width + 'px';
-    div.style.height = r.height + 'px';
-    overlay.appendChild(div);
-    console.log('[pico-review] hl-rect', i, ':', hlLeft.toFixed(0), hlTop.toFixed(0), r.width.toFixed(0), r.height.toFixed(0));
-
     if (r.top < minTop) minTop = r.top;
     if (r.bottom > maxBottom) maxBottom = r.bottom;
     if (r.left < minLeft) minLeft = r.left;
     if (r.right > maxRight) maxRight = r.right;
   }
 
-  docArea.appendChild(overlay);
-  console.log('[pico-review] overlay appended, children:', overlay.children.length);
+  // 方案A: DOM 方式高亮（直接用 span 包裹选中文字）
+  let domHighlighted = false;
+  try {
+    // 尝试 surroundContents（同一节点内的选区）
+    const span = document.createElement('span');
+    span.className = 'pending-highlight';
+    range.surroundContents(span);
+    domHighlighted = true;
+    console.log('[pico-review] DOM highlight via surroundContents OK');
+  } catch(e1) {
+    try {
+      // 跨节点时用 extractContents
+      const fragment = range.extractContents();
+      const span = document.createElement('span');
+      span.className = 'pending-highlight';
+      span.appendChild(fragment);
+      range.insertNode(span);
+      domHighlighted = true;
+      console.log('[pico-review] DOM highlight via extractContents OK');
+    } catch(e2) {
+      console.warn('[pico-review] DOM highlight failed:', e2);
+    }
+  }
+
+  // 方案B: 如果 DOM 方式失败，用 overlay 备选
+  if (!domHighlighted) {
+    const docArea = document.getElementById('doc-area');
+    const overlay = document.createElement('div');
+    overlay.id = 'pending-overlay';
+    const areaRect = docArea.getBoundingClientRect();
+    for (let i = 0; i < rects.length; i++) {
+      const r = rects[i];
+      if (r.width === 0 && r.height === 0) continue;
+      const div = document.createElement('div');
+      div.className = 'hl-rect';
+      div.style.left = (r.left - areaRect.left + docArea.scrollLeft) + 'px';
+      div.style.top = (r.top - areaRect.top + docArea.scrollTop) + 'px';
+      div.style.width = r.width + 'px';
+      div.style.height = r.height + 'px';
+      overlay.appendChild(div);
+    }
+    docArea.appendChild(overlay);
+    console.log('[pico-review] overlay fallback, children:', overlay.children.length);
+  }
 
   // 清除浏览器选区
   selection.removeAllRanges();
@@ -929,6 +961,14 @@ function onTextSelect(e) {
 }
 
 function clearPendingHighlight() {
+  // 清除 DOM 方式的临时高亮
+  document.querySelectorAll('.pending-highlight').forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize(); // 合并相邻文本节点
+  });
+  // 清除 overlay 方式的临时高亮
   const old = document.getElementById('pending-overlay');
   if (old) old.remove();
 }
@@ -989,11 +1029,20 @@ function confirmInlineComment() {
     annotations[currentFile].push(annotation);
     persistAnnotations();
 
-    // 清除 overlay 临时高亮
-    clearPendingHighlight();
-
-    // 用 DOM 方式添加正式黄色高亮
-    highlightTextInDoc(document.getElementById('doc-content'), ps.text, id);
+    // 将临时高亮转为正式黄色高亮
+    const pendingSpans = document.querySelectorAll('.pending-highlight');
+    if (pendingSpans.length > 0) {
+      pendingSpans.forEach(span => {
+        span.className = 'annotation-highlight';
+        span.dataset.annotationId = id;
+        span.onclick = () => scrollToAnnotationCard(id);
+      });
+    } else {
+      // 如果是 overlay 方式，清除 overlay 并用 DOM 方式添加正式高亮
+      const overlay = document.getElementById('pending-overlay');
+      if (overlay) overlay.remove();
+      highlightTextInDoc(document.getElementById('doc-content'), ps.text, id);
+    }
 
     updateAnnotationPanel();
     showToast('批注已添加');
