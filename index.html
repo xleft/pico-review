@@ -148,12 +148,17 @@ body {
 }
 .annotation-highlight:hover { background: #ffd633; }
 
-/* 选中文字待批注时的临时高亮 */
-.pending-highlight {
-  background: #b3e5fc;
-  border-bottom: 2px solid #039be5;
+/* 选中文字待批注时的临时高亮（覆盖层方式） */
+#pending-overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+#pending-overlay .hl-rect {
+  position: absolute;
+  background: rgba(100, 181, 246, 0.35);
+  border-bottom: 2px solid #1e88e5;
   border-radius: 2px;
-  padding: 1px 0;
 }
 
 /* ===== 内联批注输入框 ===== */
@@ -852,47 +857,55 @@ function onTextSelect(e) {
   const inlineBox = document.getElementById('inline-comment');
   if (inlineBox.contains(e.target)) return;
 
-  // 先清除之前的临时高亮
+  // 清除之前的临时高亮
   clearPendingHighlight();
 
-  // 立即给选中文字加上临时高亮（蓝色），这样焦点转移后文字仍然高亮
-  const clonedRange = range.cloneRange();
-  let pendingSpan = null;
-  try {
-    pendingSpan = document.createElement('span');
-    pendingSpan.className = 'pending-highlight';
-    pendingSpan.id = '_pending_hl';
-    clonedRange.surroundContents(pendingSpan);
-  } catch(err) {
-    // 跨节点选区：用 extractContents 方式
-    try {
-      const fragment = clonedRange.extractContents();
-      pendingSpan = document.createElement('span');
-      pendingSpan.className = 'pending-highlight';
-      pendingSpan.id = '_pending_hl';
-      pendingSpan.appendChild(fragment);
-      clonedRange.insertNode(pendingSpan);
-    } catch(err2) {
-      console.warn('临时高亮失败:', err2);
-    }
+  // 保存选区信息
+  const savedRange = range.cloneRange();
+  pendingSelection = { text, range: savedRange };
+
+  // 用 overlay 方式画高亮（不修改 DOM，100% 可靠）
+  const docArea = document.getElementById('doc-area');
+  const overlay = document.createElement('div');
+  overlay.id = 'pending-overlay';
+
+  // 获取选区的所有矩形（每行一个）
+  const rects = range.getClientRects();
+  const areaRect = docArea.getBoundingClientRect();
+
+  let minTop = Infinity, maxBottom = 0, minLeft = Infinity, maxRight = 0;
+  for (let i = 0; i < rects.length; i++) {
+    const r = rects[i];
+    if (r.width === 0 && r.height === 0) continue;
+    const div = document.createElement('div');
+    div.className = 'hl-rect';
+    div.style.left = (r.left - areaRect.left + docArea.scrollLeft) + 'px';
+    div.style.top = (r.top - areaRect.top + docArea.scrollTop) + 'px';
+    div.style.width = r.width + 'px';
+    div.style.height = r.height + 'px';
+    overlay.appendChild(div);
+
+    if (r.top < minTop) minTop = r.top;
+    if (r.bottom > maxBottom) maxBottom = r.bottom;
+    if (r.left < minLeft) minLeft = r.left;
+    if (r.right > maxRight) maxRight = r.right;
   }
 
-  // 清除浏览器选区（焦点即将转到输入框）
+  docArea.appendChild(overlay);
+
+  // 清除浏览器选区
   selection.removeAllRanges();
 
-  pendingSelection = { text, pendingSpan };
-
-  // 计算位置：在临时高亮下方弹出
-  const hlRect = pendingSpan ? pendingSpan.getBoundingClientRect() : range.getBoundingClientRect();
+  // 弹出输入框：在选区下方
   const box = document.getElementById('inline-comment');
   const boxWidth = 300;
 
-  let left = hlRect.left + hlRect.width / 2 - boxWidth / 2;
+  let left = (minLeft + maxRight) / 2 - boxWidth / 2;
   left = Math.max(8, Math.min(left, window.innerWidth - boxWidth - 8));
 
-  let top = hlRect.bottom + 8;
-  if (window.innerHeight - hlRect.bottom < 160) {
-    top = hlRect.top - 130;
+  let top = maxBottom + 8;
+  if (window.innerHeight - maxBottom < 160) {
+    top = minTop - 130;
   }
 
   box.style.left = left + 'px';
@@ -905,13 +918,8 @@ function onTextSelect(e) {
 }
 
 function clearPendingHighlight() {
-  const old = document.getElementById('_pending_hl');
-  if (old) {
-    const parent = old.parentNode;
-    while (old.firstChild) parent.insertBefore(old.firstChild, old);
-    parent.removeChild(old);
-    parent.normalize();
-  }
+  const old = document.getElementById('pending-overlay');
+  if (old) old.remove();
 }
 
 function onDocMouseDown(e) {
@@ -961,20 +969,21 @@ function confirmInlineComment() {
     document.getElementById('inline-comment-input').focus();
     return;
   }
-  // 将临时高亮（蓝色）转为正式高亮（黄色）
-  const ps = pendingSelection;
-  if (ps && ps.pendingSpan) {
-    const span = ps.pendingSpan;
-    const id = 'ann_' + Date.now();
-    span.className = 'annotation-highlight';
-    span.removeAttribute('id');
-    span.dataset.annotationId = id;
-    span.onclick = () => scrollToAnnotationCard(id);
 
+  const ps = pendingSelection;
+  if (ps) {
+    const id = 'ann_' + Date.now();
     const annotation = { id, quote: ps.text, comment, resolved: false, timestamp: new Date().toISOString() };
     if (!annotations[currentFile]) annotations[currentFile] = [];
     annotations[currentFile].push(annotation);
     persistAnnotations();
+
+    // 清除 overlay 临时高亮
+    clearPendingHighlight();
+
+    // 用 DOM 方式添加正式黄色高亮
+    highlightTextInDoc(document.getElementById('doc-content'), ps.text, id);
+
     updateAnnotationPanel();
     showToast('批注已添加');
   }
