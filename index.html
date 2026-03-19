@@ -148,6 +148,14 @@ body {
 }
 .annotation-highlight:hover { background: #ffd633; }
 
+/* 选中文字待批注时的临时高亮 */
+.pending-highlight {
+  background: #b3e5fc;
+  border-bottom: 2px solid #039be5;
+  border-radius: 2px;
+  padding: 1px 0;
+}
+
 /* ===== 内联批注输入框 ===== */
 #inline-comment {
   position: fixed;
@@ -826,7 +834,7 @@ async function saveDocToGitHub() {
   }
 }
 
-// ===== 文字选中 → 直接弹出内联输入框 =====
+// ===== 文字选中 → 立即高亮 + 弹出内联输入框 =====
 function onTextSelect(e) {
   if (editMode) return;
 
@@ -844,22 +852,47 @@ function onTextSelect(e) {
   const inlineBox = document.getElementById('inline-comment');
   if (inlineBox.contains(e.target)) return;
 
-  pendingSelection = { text, range: range.cloneRange() };
+  // 先清除之前的临时高亮
+  clearPendingHighlight();
 
-  // 计算位置：在选区下方弹出
-  const rect = range.getBoundingClientRect();
+  // 立即给选中文字加上临时高亮（蓝色），这样焦点转移后文字仍然高亮
+  const clonedRange = range.cloneRange();
+  let pendingSpan = null;
+  try {
+    pendingSpan = document.createElement('span');
+    pendingSpan.className = 'pending-highlight';
+    pendingSpan.id = '_pending_hl';
+    clonedRange.surroundContents(pendingSpan);
+  } catch(err) {
+    // 跨节点选区：用 extractContents 方式
+    try {
+      const fragment = clonedRange.extractContents();
+      pendingSpan = document.createElement('span');
+      pendingSpan.className = 'pending-highlight';
+      pendingSpan.id = '_pending_hl';
+      pendingSpan.appendChild(fragment);
+      clonedRange.insertNode(pendingSpan);
+    } catch(err2) {
+      console.warn('临时高亮失败:', err2);
+    }
+  }
+
+  // 清除浏览器选区（焦点即将转到输入框）
+  selection.removeAllRanges();
+
+  pendingSelection = { text, pendingSpan };
+
+  // 计算位置：在临时高亮下方弹出
+  const hlRect = pendingSpan ? pendingSpan.getBoundingClientRect() : range.getBoundingClientRect();
   const box = document.getElementById('inline-comment');
   const boxWidth = 300;
 
-  // 水平：居中于选区，但不超出视口
-  let left = rect.left + rect.width / 2 - boxWidth / 2;
+  let left = hlRect.left + hlRect.width / 2 - boxWidth / 2;
   left = Math.max(8, Math.min(left, window.innerWidth - boxWidth - 8));
 
-  // 垂直：选区下方 8px
-  let top = rect.bottom + 8;
-  // 如果下方空间不够（< 150px），则放到选区上方
-  if (window.innerHeight - rect.bottom < 160) {
-    top = rect.top - 130;
+  let top = hlRect.bottom + 8;
+  if (window.innerHeight - hlRect.bottom < 160) {
+    top = hlRect.top - 130;
   }
 
   box.style.left = left + 'px';
@@ -869,6 +902,16 @@ function onTextSelect(e) {
   const input = document.getElementById('inline-comment-input');
   input.value = '';
   setTimeout(() => input.focus(), 30);
+}
+
+function clearPendingHighlight() {
+  const old = document.getElementById('_pending_hl');
+  if (old) {
+    const parent = old.parentNode;
+    while (old.firstChild) parent.insertBefore(old.firstChild, old);
+    parent.removeChild(old);
+    parent.normalize();
+  }
 }
 
 function onDocMouseDown(e) {
@@ -918,29 +961,34 @@ function confirmInlineComment() {
     document.getElementById('inline-comment-input').focus();
     return;
   }
-  saveAnnotation(comment);
+  // 将临时高亮（蓝色）转为正式高亮（黄色）
+  const ps = pendingSelection;
+  if (ps && ps.pendingSpan) {
+    const span = ps.pendingSpan;
+    const id = 'ann_' + Date.now();
+    span.className = 'annotation-highlight';
+    span.removeAttribute('id');
+    span.dataset.annotationId = id;
+    span.onclick = () => scrollToAnnotationCard(id);
+
+    const annotation = { id, quote: ps.text, comment, resolved: false, timestamp: new Date().toISOString() };
+    if (!annotations[currentFile]) annotations[currentFile] = [];
+    annotations[currentFile].push(annotation);
+    persistAnnotations();
+    updateAnnotationPanel();
+    showToast('批注已添加');
+  }
+  pendingSelection = null;
   document.getElementById('inline-comment').classList.remove('show');
 }
 
 function cancelInlineComment() {
   document.getElementById('inline-comment').classList.remove('show');
+  clearPendingHighlight();
   pendingSelection = null;
-  window.getSelection().removeAllRanges();
 }
 
-// ===== 保存批注 =====
-function saveAnnotation(comment) {
-  if (!pendingSelection || !currentFile) return;
-  const id = 'ann_' + Date.now();
-  const annotation = { id, quote: pendingSelection.text, comment, resolved: false, timestamp: new Date().toISOString() };
-  if (!annotations[currentFile]) annotations[currentFile] = [];
-  annotations[currentFile].push(annotation);
-  persistAnnotations();
-  highlightSelection(pendingSelection.range, id);
-  pendingSelection = null;
-  updateAnnotationPanel();
-  showToast('批注已添加');
-}
+// saveAnnotation 已整合到 confirmInlineComment 中
 
 // ===== 高亮渲染 =====
 function highlightSelection(range, id) {
@@ -974,10 +1022,13 @@ function restoreHighlights(filePath) {
 
 function highlightTextInDoc(container, text, id) {
   if (!text || text.length < 2) return;
+
+  // 尝试在单个文本节点中找到完整匹配
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
   const nodes = [];
   let node;
   while (node = walker.nextNode()) nodes.push(node);
+
   for (const textNode of nodes) {
     const idx = textNode.textContent.indexOf(text);
     if (idx === -1) continue;
@@ -989,8 +1040,56 @@ function highlightTextInDoc(container, text, id) {
     span.className = 'annotation-highlight';
     span.dataset.annotationId = id;
     span.onclick = () => scrollToAnnotationCard(id);
-    try { range.surroundContents(span); } catch(e) {}
+    try { range.surroundContents(span); return; } catch(e) {}
+    // surroundContents 失败说明跨节点，尝试 extractContents
+    try {
+      const fragment = range.extractContents();
+      const span2 = document.createElement('span');
+      span2.className = 'annotation-highlight';
+      span2.dataset.annotationId = id;
+      span2.onclick = () => scrollToAnnotationCard(id);
+      span2.appendChild(fragment);
+      range.insertNode(span2);
+      return;
+    } catch(e2) {}
     break;
+  }
+
+  // 如果单个文本节点找不到，尝试跨节点拼接搜索
+  const allText = container.textContent;
+  const textIdx = allText.indexOf(text);
+  if (textIdx === -1) return;
+
+  // 找到起始和结束的文本节点
+  let charCount = 0;
+  let startNode = null, startOffset = 0, endNode = null, endOffset = 0;
+  for (const tn of nodes) {
+    const len = tn.textContent.length;
+    if (!startNode && charCount + len > textIdx) {
+      startNode = tn;
+      startOffset = textIdx - charCount;
+    }
+    if (startNode && charCount + len >= textIdx + text.length) {
+      endNode = tn;
+      endOffset = textIdx + text.length - charCount;
+      break;
+    }
+    charCount += len;
+  }
+
+  if (startNode && endNode) {
+    try {
+      const range = document.createRange();
+      range.setStart(startNode, startOffset);
+      range.setEnd(endNode, endOffset);
+      const fragment = range.extractContents();
+      const span = document.createElement('span');
+      span.className = 'annotation-highlight';
+      span.dataset.annotationId = id;
+      span.onclick = () => scrollToAnnotationCard(id);
+      span.appendChild(fragment);
+      range.insertNode(span);
+    } catch(e) { console.warn('跨节点高亮失败:', e); }
   }
 }
 
