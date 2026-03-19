@@ -756,11 +756,17 @@ let currentFileContent = null;
 let annotations = {}; // { fileKey: [{ id, quote, comment, range, resolved, timestamp }] }
 let pendingSelection = null;
 let ghToken = '';
-const REPO = 'xleft/picoPM';
+let REPO = 'xleft/picoPM';  // 可被 URL 参数覆盖
 const BRANCH = 'main';
 
 // ===== 初始化 =====
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
+  // 解析 URL 参数：?repo=xleft/picoPM&file=PRD_xxx.md
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlRepo = urlParams.get('repo');
+  const urlFile = urlParams.get('file');
+  if (urlRepo) REPO = urlRepo;
+
   let savedToken = localStorage.getItem('pico_gh_token') || '';
   // 去重：如果 token 是某个字符串的重复，只取前半部分
   if (savedToken.length > 0 && savedToken.length % 2 === 0) {
@@ -770,8 +776,19 @@ window.addEventListener('load', () => {
   if (savedToken) {
     document.getElementById('gh-token').value = savedToken;
     ghToken = savedToken;
-    localStorage.setItem('pico_gh_token', savedToken); // 写回修复后的正确值
-    loadFileList();
+    localStorage.setItem('pico_gh_token', savedToken);
+    await loadFileList();
+    // URL 参数指定了文件，自动打开
+    if (urlFile) {
+      const filePath = urlFile.endsWith('.md') ? urlFile : urlFile + '.md';
+      await openFile(filePath);
+    }
+  } else if (urlFile) {
+    // 有文件参数但没有 token，提示用户输入 token
+    showToast('请先输入 GitHub Token 以加载文档');
+    document.getElementById('gh-token').focus();
+    // 保存待打开的文件，等用户输入 token 后自动打开
+    window._pendingFile = urlFile.endsWith('.md') ? urlFile : urlFile + '.md';
   }
 
   const savedAnnotations = localStorage.getItem('pico_annotations');
@@ -804,11 +821,9 @@ async function ghFetch(path) {
 
 async function loadFileList() {
   const inputToken = document.getElementById('gh-token').value.trim();
-  // 如果输入框有新值就用新值，否则用缓存
   const token = inputToken || ghToken || localStorage.getItem('pico_gh_token');
   if (!token) { showToast('请先输入 GitHub Token'); return; }
   ghToken = token;
-  // 更新输入框显示正确的 token（防止重复追加）
   document.getElementById('gh-token').value = token;
   localStorage.setItem('pico_gh_token', token);
 
@@ -826,6 +841,12 @@ async function loadFileList() {
     const mdFiles = data.tree.filter(f => f.type === 'blob' && f.path.endsWith('.md') && !f.path.includes('/'));
     renderFileList(mdFiles);
     showToast(`已加载 ${mdFiles.length} 个文档`);
+
+    // 如果有待打开的文件（URL 参数指定但 token 还没输入时缓存的）
+    if (window._pendingFile) {
+      await openFile(window._pendingFile);
+      window._pendingFile = null;
+    }
   } catch(e) {
     showToast(`加载失败: ${e.message}`);
   } finally {
@@ -1189,18 +1210,65 @@ function scrollToFirstAnnotation() {
 }
 
 // ===== 提交给 Manus =====
-function submitAnnotations() {
+async function submitAnnotations() {
   if (!currentFile || !annotations[currentFile]) return;
 
   const active = annotations[currentFile].filter(a => !a.resolved);
   if (active.length === 0) { showToast('没有待处理的批注'); return; }
 
+  // 1. 把批注写回 GitHub reviews/ 目录
+  const reviewPath = `reviews/${currentFile.replace('.md', '')}_review.json`;
+  const reviewData = {
+    file: currentFile,
+    repo: REPO,
+    status: 'pending_review',
+    submitted_at: new Date().toISOString(),
+    annotations: active.map(ann => ({
+      id: ann.id,
+      quote: ann.quote,
+      comment: ann.comment || '',
+      timestamp: ann.timestamp
+    }))
+  };
+
+  let writeSuccess = false;
+  try {
+    // 先获取文件的 sha（如果已存在，更新需要 sha）
+    const existing = await ghFetch(reviewPath).catch(() => null);
+    const sha = existing ? existing.sha : undefined;
+
+    const token = ghToken || localStorage.getItem('pico_gh_token');
+    const body = {
+      message: `review: ${currentFile} - ${active.length} annotations`,
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(reviewData, null, 2)))),
+      branch: BRANCH
+    };
+    if (sha) body.sha = sha;
+
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${reviewPath}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    writeSuccess = res.ok;
+  } catch(e) {
+    console.warn('写回 GitHub 失败:', e);
+  }
+
+  // 2. 生成结构化复制文本
   const lines = [
     `# PRD 修改指令`,
     ``,
     `**文档**: \`${currentFile}\``,
+    `**仓库**: \`${REPO}\``,
+    `**批注文件**: \`${reviewPath}\``,
     `**批注数量**: ${active.length} 条`,
     `**生成时间**: ${new Date().toLocaleString('zh-CN')}`,
+    writeSuccess ? `**状态**: 批注已写入 GitHub ✅` : `**状态**: GitHub 写入失败，请手动复制以下内容`,
     ``,
     `---`,
     ``
@@ -1223,7 +1291,10 @@ function submitAnnotations() {
     lines.push(``);
   });
 
-  lines.push(`> 以上批注由 Pico PRD Review 工具生成，请逐条处理后更新文档。`);
+  lines.push(`> 以上批注由 Pico PRD Review 工具生成。`);
+  if (writeSuccess) {
+    lines.push(`> Agent 可读取 \`${REPO}/${reviewPath}\` 获取结构化批注数据。`);
+  }
 
   document.getElementById('submit-output').textContent = lines.join('\n');
   document.getElementById('submit-modal').classList.add('show');
