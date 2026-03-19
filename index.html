@@ -9,147 +9,79 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  display: flex;
   height: 100vh;
   overflow: hidden;
-  background: #0f0f13;
+  background: #f9f9fb;
   font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
-  color: #e0e0e0;
-}
-
-/* ===== 左侧文件列表 ===== */
-#sidebar {
-  width: 220px;
-  min-width: 220px;
-  background: #16161e;
-  border-right: 1px solid #2a2a3e;
+  color: #1a1a2e;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
-#sidebar-header {
-  padding: 16px 14px 12px;
-  border-bottom: 1px solid #2a2a3e;
+/* ===== 顶部工具栏 ===== */
+#topbar {
+  height: 48px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 100;
 }
 
-#sidebar-header h1 {
-  font-size: 13px;
-  font-weight: 700;
-  color: #ff6b9d;
-  letter-spacing: 0.5px;
-}
-
-#sidebar-header p {
-  font-size: 10px;
-  color: #666;
-  margin-top: 3px;
-}
-
-#token-section {
-  padding: 10px 14px;
-  border-bottom: 1px solid #2a2a3e;
-}
-
-#token-section label {
-  font-size: 10px;
-  color: #888;
-  display: block;
-  margin-bottom: 4px;
-}
-
-#gh-token {
-  width: 100%;
-  background: #1e1e2e;
-  border: 1px solid #333;
-  border-radius: 4px;
-  padding: 5px 8px;
-  font-size: 10px;
-  color: #ccc;
-  outline: none;
-}
-
-#gh-token:focus { border-color: #ff6b9d; }
-
-#load-btn {
-  width: 100%;
-  margin-top: 6px;
-  background: linear-gradient(135deg, #ff6b9d, #c96bff);
-  border: none;
-  border-radius: 4px;
-  padding: 6px;
-  font-size: 11px;
-  color: #fff;
-  cursor: pointer;
+#doc-title {
+  font-size: 14px;
   font-weight: 600;
-}
-
-#load-btn:hover { opacity: 0.85; }
-
-#file-list {
+  color: #2a2a3e;
   flex: 1;
-  overflow-y: auto;
-  padding: 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.file-item {
-  padding: 8px 14px;
+.topbar-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: #666;
   cursor: pointer;
-  border-radius: 0;
-  transition: background 0.15s;
-  border-left: 3px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
 }
+.topbar-btn:hover { border-color: #ff6b9d; color: #ff6b9d; }
 
-.file-item:hover { background: #1e1e2e; }
-
-.file-item.active {
-  background: #1e1e2e;
-  border-left-color: #ff6b9d;
+#token-status-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
+#token-status-btn.connected { border-color: #44bb88; color: #44bb88; }
+#token-status-btn:hover { border-color: #ff6b9d; color: #ff6b9d; }
 
-.file-item .fname {
-  font-size: 11px;
-  color: #ccc;
-  word-break: break-all;
-  line-height: 1.4;
-}
-
-.file-item .fmeta {
-  font-size: 9px;
-  color: #555;
-  margin-top: 2px;
-}
-
-.file-item .badge {
-  display: inline-block;
-  background: #ff6b9d33;
-  color: #ff6b9d;
-  font-size: 9px;
-  padding: 1px 5px;
-  border-radius: 8px;
-  margin-top: 3px;
-}
-
-/* ===== 主内容区 ===== */
+/* ===== 主区域 ===== */
 #main {
   flex: 1;
   display: flex;
   overflow: hidden;
 }
 
-/* ===== 文档阅读区 ===== */
+/* ===== 文档区域 ===== */
 #doc-area {
   flex: 1;
   overflow-y: auto;
-  padding: 32px 48px;
-  background: #f9f9fb;
-  color: #1a1a2e;
+  padding: 40px 80px;
   position: relative;
-}
-
-#doc-area.dark-mode {
-  background: #0f0f13;
-  color: #e0e0e0;
 }
 
 #doc-placeholder {
@@ -161,61 +93,61 @@ body {
   color: #888;
   text-align: center;
 }
-
 #doc-placeholder .icon { font-size: 48px; margin-bottom: 16px; }
 #doc-placeholder h2 { font-size: 18px; color: #aaa; margin-bottom: 8px; }
-#doc-placeholder p { font-size: 13px; color: #666; line-height: 1.6; }
+#doc-placeholder p { font-size: 13px; color: #888; line-height: 1.8; }
+#doc-placeholder code { background: #f0f0f8; padding: 2px 8px; border-radius: 4px; font-size: 12px; color: #c96bff; }
 
-/* Markdown 渲染样式 */
+/* Markdown 渲染 + 编辑样式 */
 #doc-content {
-  max-width: 780px;
+  max-width: 800px;
   margin: 0 auto;
-  line-height: 1.8;
+  line-height: 1.85;
   font-size: 15px;
+  outline: none;
 }
 
-#doc-content h1 { font-size: 24px; font-weight: 700; margin: 0 0 16px; color: #1a1a2e; border-bottom: 2px solid #ff6b9d; padding-bottom: 8px; }
-#doc-content h2 { font-size: 18px; font-weight: 600; margin: 28px 0 12px; color: #2a2a3e; }
-#doc-content h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: #3a3a4e; }
-#doc-content p { margin: 0 0 12px; }
-#doc-content blockquote { border-left: 3px solid #ff6b9d; padding: 8px 16px; background: #fff0f5; margin: 12px 0; border-radius: 0 6px 6px 0; color: #555; }
+#doc-content:focus { outline: none; }
+
+#doc-content h1 { font-size: 26px; font-weight: 700; margin: 0 0 20px; color: #1a1a2e; border-bottom: 2px solid #ff6b9d; padding-bottom: 10px; }
+#doc-content h2 { font-size: 19px; font-weight: 600; margin: 32px 0 12px; color: #2a2a3e; }
+#doc-content h3 { font-size: 16px; font-weight: 600; margin: 22px 0 8px; color: #3a3a4e; }
+#doc-content p { margin: 0 0 14px; }
+#doc-content blockquote { border-left: 3px solid #ff6b9d; padding: 8px 16px; background: #fff0f5; margin: 14px 0; border-radius: 0 6px 6px 0; color: #555; }
 #doc-content code { background: #f0f0f8; padding: 2px 6px; border-radius: 3px; font-size: 13px; font-family: 'SF Mono', Consolas, monospace; color: #c96bff; }
-#doc-content pre { background: #1e1e2e; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; }
+#doc-content pre { background: #1e1e2e; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 14px 0; }
 #doc-content pre code { background: none; color: #e0e0e0; padding: 0; }
-#doc-content table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
-#doc-content th { background: #f0f0f8; padding: 8px 12px; text-align: left; border: 1px solid #ddd; font-weight: 600; color: #2a2a3e; }
-#doc-content td { padding: 8px 12px; border: 1px solid #eee; }
+#doc-content table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+#doc-content th { background: #f0f0f8; padding: 9px 12px; text-align: left; border: 1px solid #ddd; font-weight: 600; color: #2a2a3e; }
+#doc-content td { padding: 9px 12px; border: 1px solid #eee; }
 #doc-content tr:nth-child(even) td { background: #fafafa; }
-#doc-content ul, #doc-content ol { padding-left: 24px; margin: 0 0 12px; }
-#doc-content li { margin: 4px 0; }
-#doc-content hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+#doc-content ul, #doc-content ol { padding-left: 24px; margin: 0 0 14px; }
+#doc-content li { margin: 5px 0; }
+#doc-content hr { border: none; border-top: 1px solid #eee; margin: 28px 0; }
 #doc-content strong { color: #1a1a2e; }
 #doc-content a { color: #ff6b9d; text-decoration: none; }
 
-/* dark mode doc */
-#doc-area.dark-mode #doc-content h1 { color: #e0e0e0; }
-#doc-area.dark-mode #doc-content h2 { color: #ccc; }
-#doc-area.dark-mode #doc-content h3 { color: #bbb; }
-#doc-area.dark-mode #doc-content blockquote { background: #1e1e2e; color: #aaa; }
-#doc-area.dark-mode #doc-content code { background: #2a2a3e; color: #c96bff; }
-#doc-area.dark-mode #doc-content th { background: #2a2a3e; color: #ccc; border-color: #333; }
-#doc-area.dark-mode #doc-content td { border-color: #2a2a3e; }
-#doc-area.dark-mode #doc-content tr:nth-child(even) td { background: #1a1a2e; }
-#doc-area.dark-mode #doc-content strong { color: #e0e0e0; }
-#doc-area.dark-mode #doc-content hr { border-color: #2a2a3e; }
+/* 编辑模式指示 */
+#doc-content[contenteditable="true"] {
+  border-left: 3px solid transparent;
+  padding-left: 12px;
+  transition: border-color 0.2s;
+}
+#doc-content[contenteditable="true"]:focus {
+  border-left-color: #c96bff44;
+}
 
 /* 划线高亮 */
 .annotation-highlight {
-  background: #ff6b9d44;
+  background: #ff6b9d33;
   border-bottom: 2px solid #ff6b9d;
   cursor: pointer;
   border-radius: 2px;
   transition: background 0.15s;
 }
+.annotation-highlight:hover { background: #ff6b9d55; }
 
-.annotation-highlight:hover { background: #ff6b9d66; }
-
-/* 选中文字时的浮动工具栏 */
+/* 选中文字浮动工具栏 */
 #selection-toolbar {
   position: fixed;
   background: #1e1e2e;
@@ -226,9 +158,8 @@ body {
   gap: 6px;
   align-items: center;
   z-index: 1000;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
-
 #selection-toolbar button {
   background: linear-gradient(135deg, #ff6b9d, #c96bff);
   border: none;
@@ -240,20 +171,15 @@ body {
   font-weight: 600;
   white-space: nowrap;
 }
-
 #selection-toolbar button:hover { opacity: 0.85; }
-
-#selection-toolbar .cancel-btn {
-  background: #333;
-  color: #aaa;
-}
+#selection-toolbar .cancel-btn { background: #333; color: #aaa; }
 
 /* ===== 右侧批注面板 ===== */
 #annotation-panel {
-  width: 300px;
-  min-width: 300px;
-  background: #16161e;
-  border-left: 1px solid #2a2a3e;
+  width: 280px;
+  min-width: 280px;
+  background: #fff;
+  border-left: 1px solid #eee;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -261,20 +187,14 @@ body {
 
 #panel-header {
   padding: 14px 16px;
-  border-bottom: 1px solid #2a2a3e;
+  border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-
-#panel-header h2 {
-  font-size: 13px;
-  font-weight: 700;
-  color: #ff6b9d;
-}
-
+#panel-header h2 { font-size: 13px; font-weight: 700; color: #ff6b9d; }
 #panel-header .count {
-  background: #ff6b9d33;
+  background: #ff6b9d22;
   color: #ff6b9d;
   font-size: 10px;
   padding: 2px 8px;
@@ -289,30 +209,24 @@ body {
 }
 
 .annotation-card {
-  background: #1e1e2e;
+  background: #f9f9fb;
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px 12px;
   margin-bottom: 8px;
   border-left: 3px solid #ff6b9d;
   cursor: pointer;
   transition: border-color 0.15s;
-  position: relative;
 }
-
 .annotation-card:hover { border-left-color: #c96bff; }
-
-.annotation-card.resolved {
-  border-left-color: #44bb88;
-  opacity: 0.6;
-}
+.annotation-card.resolved { border-left-color: #44bb88; opacity: 0.6; }
 
 .annotation-quote {
   font-size: 11px;
-  color: #888;
+  color: #999;
   font-style: italic;
   margin-bottom: 6px;
   line-height: 1.4;
-  border-left: 2px solid #333;
+  border-left: 2px solid #eee;
   padding-left: 6px;
   overflow: hidden;
   display: -webkit-box;
@@ -322,48 +236,46 @@ body {
 
 .annotation-comment {
   font-size: 12px;
-  color: #ccc;
+  color: #333;
   line-height: 1.5;
   min-height: 20px;
 }
-
 .annotation-comment[contenteditable="true"] {
   outline: none;
   border-bottom: 1px dashed #ff6b9d;
   padding-bottom: 2px;
 }
+.annotation-comment:empty::before {
+  content: attr(placeholder);
+  color: #bbb;
+  font-style: italic;
+}
 
 .annotation-meta {
   font-size: 10px;
-  color: #555;
+  color: #bbb;
   margin-top: 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-
-.annotation-actions {
-  display: flex;
-  gap: 6px;
-}
-
+.annotation-actions { display: flex; gap: 6px; }
 .annotation-actions button {
   background: none;
-  border: 1px solid #333;
+  border: 1px solid #eee;
   border-radius: 4px;
-  padding: 2px 8px;
+  padding: 2px 7px;
   font-size: 10px;
-  color: #888;
+  color: #aaa;
   cursor: pointer;
 }
-
 .annotation-actions button:hover { border-color: #ff6b9d; color: #ff6b9d; }
 .annotation-actions .resolve-btn:hover { border-color: #44bb88; color: #44bb88; }
 .annotation-actions .delete-btn:hover { border-color: #ff4466; color: #ff4466; }
 
 #panel-footer {
   padding: 12px;
-  border-top: 1px solid #2a2a3e;
+  border-top: 1px solid #eee;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -379,109 +291,134 @@ body {
   color: #fff;
   cursor: pointer;
   font-weight: 700;
-  letter-spacing: 0.3px;
 }
-
 #submit-btn:hover { opacity: 0.85; }
 #submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+#save-doc-btn {
+  width: 100%;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 7px;
+  font-size: 12px;
+  color: #666;
+  cursor: pointer;
+}
+#save-doc-btn:hover { border-color: #44bb88; color: #44bb88; }
 
 #clear-resolved-btn {
   width: 100%;
   background: none;
-  border: 1px solid #333;
+  border: 1px solid #eee;
   border-radius: 6px;
   padding: 6px;
   font-size: 11px;
-  color: #666;
+  color: #bbb;
   cursor: pointer;
 }
+#clear-resolved-btn:hover { border-color: #ddd; color: #888; }
 
-#clear-resolved-btn:hover { border-color: #555; color: #aaa; }
-
-/* ===== 顶部工具栏 ===== */
-#topbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 44px;
-  background: #f9f9fb;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  align-items: center;
-  padding: 0 48px;
-  gap: 12px;
-  z-index: 100;
+/* ===== 空批注状态 ===== */
+#empty-annotations {
+  text-align: center;
+  padding: 40px 16px;
+  color: #ccc;
 }
+#empty-annotations .icon { font-size: 28px; margin-bottom: 10px; }
+#empty-annotations p { font-size: 11px; line-height: 1.7; color: #bbb; }
 
-#doc-area.dark-mode #topbar {
-  background: #0f0f13;
-  border-bottom-color: #2a2a3e;
-}
-
-#doc-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #2a2a3e;
-  flex: 1;
-}
-
-#doc-area.dark-mode #doc-title { color: #ccc; }
-
-.topbar-btn {
-  background: none;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 4px 10px;
-  font-size: 11px;
-  color: #666;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.topbar-btn:hover { border-color: #ff6b9d; color: #ff6b9d; }
-
-#doc-area.dark-mode .topbar-btn { border-color: #333; color: #888; }
-#doc-area.dark-mode .topbar-btn:hover { border-color: #ff6b9d; color: #ff6b9d; }
-
-#doc-content-wrapper {
-  padding-top: 52px;
-}
-
-/* ===== 批注输入弹窗 ===== */
-#comment-modal {
+/* ===== Token 弹窗 ===== */
+#token-modal {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.5);
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 3000;
+}
+#token-modal.show { display: flex; }
+
+#token-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px;
+  width: 420px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+}
+#token-box h3 { font-size: 16px; color: #1a1a2e; margin-bottom: 6px; font-weight: 700; }
+#token-box p { font-size: 12px; color: #888; margin-bottom: 18px; line-height: 1.6; }
+#token-box p a { color: #ff6b9d; text-decoration: none; }
+
+#token-input {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #333;
+  outline: none;
+  font-family: 'SF Mono', Consolas, monospace;
+  background: #f9f9fb;
+}
+#token-input:focus { border-color: #ff6b9d; background: #fff; }
+#token-input::placeholder { color: #ccc; font-family: inherit; }
+
+#token-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  justify-content: flex-end;
+}
+#token-confirm-btn {
+  background: linear-gradient(135deg, #ff6b9d, #c96bff);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 22px;
+  font-size: 13px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+#token-skip-btn {
+  background: none;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 13px;
+  color: #aaa;
+  cursor: pointer;
 }
 
+/* ===== 批注输入弹窗 ===== */
+#comment-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
 #comment-modal.show { display: flex; }
 
 #comment-box {
-  background: #1e1e2e;
+  background: #fff;
   border-radius: 12px;
-  padding: 20px;
-  width: 400px;
-  border: 1px solid #ff6b9d44;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  padding: 22px;
+  width: 420px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  border: 1px solid #ff6b9d22;
 }
-
-#comment-box h3 {
-  font-size: 14px;
-  color: #ff6b9d;
-  margin-bottom: 10px;
-}
+#comment-box h3 { font-size: 14px; color: #ff6b9d; margin-bottom: 10px; font-weight: 700; }
 
 #comment-quote-preview {
-  font-size: 11px;
-  color: #888;
+  font-size: 12px;
+  color: #999;
   font-style: italic;
-  background: #16161e;
-  padding: 8px 10px;
+  background: #f9f9fb;
+  padding: 8px 12px;
   border-radius: 6px;
   margin-bottom: 12px;
   border-left: 2px solid #ff6b9d;
@@ -492,21 +429,19 @@ body {
 
 #comment-textarea {
   width: 100%;
-  background: #16161e;
-  border: 1px solid #333;
-  border-radius: 6px;
-  padding: 10px;
+  background: #f9f9fb;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 10px 12px;
   font-size: 13px;
-  color: #ccc;
+  color: #333;
   resize: vertical;
   min-height: 80px;
   outline: none;
   font-family: inherit;
 }
-
-#comment-textarea:focus { border-color: #ff6b9d; }
-
-#comment-textarea::placeholder { color: #555; }
+#comment-textarea:focus { border-color: #ff6b9d; background: #fff; }
+#comment-textarea::placeholder { color: #ccc; }
 
 #comment-modal-actions {
   display: flex;
@@ -514,72 +449,49 @@ body {
   margin-top: 12px;
   justify-content: flex-end;
 }
-
 #comment-modal-actions button {
-  border-radius: 6px;
+  border-radius: 7px;
   padding: 7px 16px;
   font-size: 12px;
   cursor: pointer;
   font-weight: 600;
 }
-
-#comment-confirm-btn {
-  background: linear-gradient(135deg, #ff6b9d, #c96bff);
-  border: none;
-  color: #fff;
-}
-
-#comment-cancel-btn {
-  background: none;
-  border: 1px solid #333;
-  color: #888;
-}
+#comment-confirm-btn { background: linear-gradient(135deg, #ff6b9d, #c96bff); border: none; color: #fff; }
+#comment-cancel-btn { background: none; border: 1px solid #eee; color: #aaa; }
 
 /* ===== 提交结果弹窗 ===== */
 #submit-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.5);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 2000;
 }
-
 #submit-modal.show { display: flex; }
 
 #submit-box {
-  background: #1e1e2e;
-  border-radius: 12px;
+  background: #fff;
+  border-radius: 14px;
   padding: 24px;
-  width: 560px;
+  width: 580px;
   max-height: 80vh;
-  border: 1px solid #ff6b9d44;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
   display: flex;
   flex-direction: column;
 }
-
-#submit-box h3 {
-  font-size: 15px;
-  color: #ff6b9d;
-  margin-bottom: 4px;
-}
-
-#submit-box p {
-  font-size: 11px;
-  color: #666;
-  margin-bottom: 12px;
-}
+#submit-box h3 { font-size: 15px; color: #ff6b9d; margin-bottom: 4px; font-weight: 700; }
+#submit-box > p { font-size: 11px; color: #aaa; margin-bottom: 12px; }
 
 #submit-output {
   flex: 1;
-  background: #16161e;
-  border: 1px solid #333;
+  background: #f9f9fb;
+  border: 1px solid #eee;
   border-radius: 8px;
   padding: 14px;
   font-size: 12px;
-  color: #ccc;
+  color: #444;
   font-family: 'SF Mono', Consolas, monospace;
   overflow-y: auto;
   white-space: pre-wrap;
@@ -593,25 +505,23 @@ body {
   margin-top: 14px;
   justify-content: flex-end;
 }
-
 #copy-btn {
   background: linear-gradient(135deg, #ff6b9d, #c96bff);
   border: none;
-  border-radius: 6px;
+  border-radius: 7px;
   padding: 8px 20px;
   font-size: 12px;
   color: #fff;
   cursor: pointer;
   font-weight: 600;
 }
-
 #close-submit-btn {
   background: none;
-  border: 1px solid #333;
-  border-radius: 6px;
+  border: 1px solid #eee;
+  border-radius: 7px;
   padding: 8px 16px;
   font-size: 12px;
-  color: #888;
+  color: #aaa;
   cursor: pointer;
 }
 
@@ -622,92 +532,65 @@ body {
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: #1e1e2e;
-  border: 1px solid #ff6b9d44;
   border-radius: 8px;
   padding: 10px 20px;
   font-size: 13px;
-  color: #ccc;
+  color: #fff;
   opacity: 0;
   transition: all 0.3s;
-  z-index: 3000;
+  z-index: 4000;
   pointer-events: none;
 }
-
-#toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* ===== 空批注状态 ===== */
-#empty-annotations {
-  text-align: center;
-  padding: 40px 20px;
-  color: #555;
-}
-
-#empty-annotations .icon { font-size: 32px; margin-bottom: 10px; }
-#empty-annotations p { font-size: 12px; line-height: 1.6; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* 滚动条 */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #555; }
+::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
 </style>
 </head>
 <body>
 
-<!-- 左侧文件列表 -->
-<div id="sidebar">
-  <div id="sidebar-header">
-    <h1>💕 Pico PRD Review</h1>
-    <p>文档批注 · 修改追踪</p>
-  </div>
-  <div id="token-section">
-    <label>GitHub Token（访问私有仓库）</label>
-    <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" />
-    <button id="load-btn" onclick="loadFileList()">加载文档列表</button>
-  </div>
-  <div id="file-list">
-    <div style="padding: 20px 14px; color: #555; font-size: 11px; text-align: center;">
-      输入 Token 后加载文档
-    </div>
-  </div>
+<!-- 顶部工具栏 -->
+<div id="topbar">
+  <span id="doc-title">Pico PRD Review</span>
+  <button class="topbar-btn" id="edit-toggle-btn" onclick="toggleEditMode()" style="display:none">✏️ 编辑模式</button>
+  <button class="topbar-btn" onclick="scrollToFirstAnnotation()" id="goto-ann-btn" style="display:none">📍 跳到批注</button>
+  <button id="token-status-btn" onclick="showTokenModal()" title="管理 GitHub Token">
+    <span id="token-dot">○</span> Token
+  </button>
 </div>
 
-<!-- 主内容区 -->
+<!-- 主区域 -->
 <div id="main">
-  <!-- 文档阅读区 -->
+  <!-- 文档区域 -->
   <div id="doc-area">
-    <div id="topbar">
-      <span id="doc-title">请选择文档</span>
-      <button class="topbar-btn" onclick="toggleDark()">🌙 深色</button>
-      <button class="topbar-btn" onclick="scrollToFirstAnnotation()">📍 跳到批注</button>
+    <div id="doc-placeholder">
+      <div class="icon">📄</div>
+      <h2>等待文档加载</h2>
+      <p>通过链接直接打开文档，例如：<br>
+        <code>?repo=xleft/picoPM&amp;file=PRD_xxx</code><br><br>
+        如需输入 GitHub Token，点击右上角 Token 按钮
+      </p>
     </div>
-    <div id="doc-content-wrapper">
-      <div id="doc-placeholder">
-        <div class="icon">📄</div>
-        <h2>选择一个文档开始批注</h2>
-        <p>从左侧列表选择 PRD 文档<br>选中文字后点击「添加批注」<br>完成后点击「提交给 Manus」</p>
-      </div>
-      <div id="doc-content" style="display:none;"></div>
-    </div>
+    <div id="doc-content" style="display:none;"></div>
   </div>
 
   <!-- 右侧批注面板 -->
   <div id="annotation-panel">
     <div id="panel-header">
-      <h2>批注列表</h2>
+      <h2>批注</h2>
       <span class="count" id="annotation-count">0</span>
     </div>
     <div id="annotation-list">
       <div id="empty-annotations">
         <div class="icon">✏️</div>
-        <p>选中文档中的文字<br>即可添加批注</p>
+        <p>选中文字后<br>点击「添加批注」</p>
       </div>
     </div>
     <div id="panel-footer">
       <button id="submit-btn" onclick="submitAnnotations()" disabled>✅ 提交给 Manus</button>
+      <button id="save-doc-btn" onclick="saveDocToGitHub()" style="display:none">💾 保存文档修改</button>
       <button id="clear-resolved-btn" onclick="clearResolved()">清除已解决批注</button>
     </div>
   </div>
@@ -717,7 +600,22 @@ body {
 <div id="selection-toolbar">
   <button onclick="addAnnotation()">✏️ 添加批注</button>
   <button onclick="addHighlightOnly()">🖊 仅高亮</button>
-  <button class="cancel-btn" onclick="hideToolbar()">取消</button>
+  <button class="cancel-btn" onclick="hideToolbar()">✕</button>
+</div>
+
+<!-- Token 弹窗 -->
+<div id="token-modal">
+  <div id="token-box">
+    <h3>🔑 连接 GitHub</h3>
+    <p>输入你的 GitHub Token 以加载私有仓库文档。Token 仅保存在本地浏览器中，不会上传到任何服务器。<br><br>
+      获取方式：<a href="https://github.com/settings/tokens/new" target="_blank">GitHub Settings → Tokens → New token</a>，勾选 <strong>repo</strong> 权限。
+    </p>
+    <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx 或 ghu_xxxxxxxxxxxx" />
+    <div id="token-modal-actions">
+      <button id="token-skip-btn" onclick="closeTokenModal()">稍后再说</button>
+      <button id="token-confirm-btn" onclick="saveToken()">确认连接</button>
+    </div>
+  </div>
 </div>
 
 <!-- 批注输入弹窗 -->
@@ -737,7 +635,7 @@ body {
 <div id="submit-modal">
   <div id="submit-box">
     <h3>📋 修改指令（复制给 Manus）</h3>
-    <p>以下是根据你的批注整理的结构化修改指令，复制后粘贴给 Manus 即可</p>
+    <p>以下是根据批注整理的结构化修改指令，复制后粘贴给 Manus 即可</p>
     <div id="submit-output"></div>
     <div id="submit-modal-actions">
       <button id="close-submit-btn" onclick="closeSubmitModal()">关闭</button>
@@ -753,211 +651,286 @@ body {
 // ===== 状态 =====
 let currentFile = null;
 let currentFileContent = null;
-let annotations = {}; // { fileKey: [{ id, quote, comment, range, resolved, timestamp }] }
+let annotations = {};
 let pendingSelection = null;
 let ghToken = '';
-let REPO = 'xleft/picoPM';  // 可被 URL 参数覆盖
+let REPO = 'xleft/picoPM';
 const BRANCH = 'main';
+let editMode = false;
+let docOriginalHTML = '';
 
 // ===== 初始化 =====
 window.addEventListener('load', async () => {
-  // 解析 URL 参数：?repo=xleft/picoPM&file=PRD_xxx.md
   const urlParams = new URLSearchParams(window.location.search);
   const urlRepo = urlParams.get('repo');
   const urlFile = urlParams.get('file');
   if (urlRepo) REPO = urlRepo;
 
-  let savedToken = localStorage.getItem('pico_gh_token') || '';
-  // 去重：如果 token 是某个字符串的重复，只取前半部分
-  if (savedToken.length > 0 && savedToken.length % 2 === 0) {
-    const half = savedToken.slice(0, savedToken.length / 2);
-    if (half + half === savedToken) savedToken = half;
-  }
-  if (savedToken) {
-    document.getElementById('gh-token').value = savedToken;
-    ghToken = savedToken;
-    localStorage.setItem('pico_gh_token', savedToken);
-    await loadFileList();
-    // URL 参数指定了文件，自动打开
-    if (urlFile) {
-      const filePath = urlFile.endsWith('.md') ? urlFile : urlFile + '.md';
-      await openFile(filePath);
-    }
-  } else if (urlFile) {
-    // 有文件参数但没有 token，提示用户输入 token
-    showToast('请先输入 GitHub Token 以加载文档');
-    document.getElementById('gh-token').focus();
-    // 保存待打开的文件，等用户输入 token 后自动打开
-    window._pendingFile = urlFile.endsWith('.md') ? urlFile : urlFile + '.md';
-  }
-
+  // 加载本地批注
   const savedAnnotations = localStorage.getItem('pico_annotations');
   if (savedAnnotations) {
     try { annotations = JSON.parse(savedAnnotations); } catch(e) {}
   }
 
+  // 读取 token
+  let savedToken = localStorage.getItem('pico_gh_token') || '';
+  // 去重修复
+  if (savedToken.length > 0 && savedToken.length % 2 === 0) {
+    const half = savedToken.slice(0, savedToken.length / 2);
+    if (half + half === savedToken) savedToken = half;
+  }
+
+  if (savedToken) {
+    ghToken = savedToken;
+    updateTokenStatus(true);
+    if (urlFile) {
+      const filePath = urlFile.endsWith('.md') ? urlFile : urlFile + '.md';
+      await openFile(filePath);
+    }
+  } else {
+    // 没有 token：如果有 URL 文件参数，弹出 token 输入框
+    if (urlFile) {
+      window._pendingFile = urlFile.endsWith('.md') ? urlFile : urlFile + '.md';
+      showTokenModal();
+    }
+    updateTokenStatus(false);
+  }
+
   // 监听文字选中
   document.getElementById('doc-content').addEventListener('mouseup', onTextSelect);
   document.addEventListener('mousedown', onDocMouseDown);
+  document.addEventListener('keydown', onKeyDown);
 });
+
+// ===== Token 管理 =====
+function showTokenModal() {
+  const input = document.getElementById('token-input');
+  input.value = ghToken || '';
+  document.getElementById('token-modal').classList.add('show');
+  setTimeout(() => input.focus(), 100);
+}
+
+function closeTokenModal() {
+  document.getElementById('token-modal').classList.remove('show');
+}
+
+async function saveToken() {
+  const input = document.getElementById('token-input').value.trim();
+  if (!input) { showToast('请输入 Token'); return; }
+  ghToken = input;
+  localStorage.setItem('pico_gh_token', input);
+  updateTokenStatus(true);
+  closeTokenModal();
+  showToast('Token 已保存');
+
+  // 如果有待打开的文件
+  if (window._pendingFile) {
+    await openFile(window._pendingFile);
+    window._pendingFile = null;
+  }
+}
+
+function clearToken() {
+  ghToken = '';
+  localStorage.removeItem('pico_gh_token');
+  updateTokenStatus(false);
+  showToast('Token 已清除');
+}
+
+function updateTokenStatus(connected) {
+  const btn = document.getElementById('token-status-btn');
+  const dot = document.getElementById('token-dot');
+  if (connected) {
+    btn.classList.add('connected');
+    dot.textContent = '●';
+    btn.title = '已连接 GitHub（点击管理 Token）';
+  } else {
+    btn.classList.remove('connected');
+    dot.textContent = '○';
+    btn.title = '未连接（点击输入 Token）';
+  }
+}
 
 // ===== GitHub API =====
 async function ghFetch(path) {
-  // 优先用内存中的 token，其次从 localStorage 读取，最后才从输入框读取
-  const token = ghToken || localStorage.getItem('pico_gh_token') || document.getElementById('gh-token').value.trim();
-  if (!token) { showToast('请先输入 GitHub Token'); return null; }
-  ghToken = token;
-  localStorage.setItem('pico_gh_token', token);
-
+  const token = ghToken || localStorage.getItem('pico_gh_token');
+  if (!token) { showTokenModal(); return null; }
   const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`, {
     headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
   });
   if (!res.ok) {
-    showToast(`GitHub API 错误: ${res.status}`);
+    if (res.status === 401) { showToast('Token 无效，请重新输入'); showTokenModal(); }
+    else showToast(`GitHub API 错误: ${res.status}`);
     return null;
   }
   return res.json();
 }
 
-async function loadFileList() {
-  const inputToken = document.getElementById('gh-token').value.trim();
-  const token = inputToken || ghToken || localStorage.getItem('pico_gh_token');
-  if (!token) { showToast('请先输入 GitHub Token'); return; }
-  ghToken = token;
-  document.getElementById('gh-token').value = token;
-  localStorage.setItem('pico_gh_token', token);
-
-  const btn = document.getElementById('load-btn');
-  btn.textContent = '加载中…';
-  btn.disabled = true;
-
-  try {
-    const res = await fetch(`https://api.github.com/repos/${REPO}/git/trees/${BRANCH}?recursive=1`, {
-      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-    });
-    if (!res.ok) throw new Error(`${res.status}`);
-    const data = await res.json();
-
-    const mdFiles = data.tree.filter(f => f.type === 'blob' && f.path.endsWith('.md') && !f.path.includes('/'));
-    renderFileList(mdFiles);
-    showToast(`已加载 ${mdFiles.length} 个文档`);
-
-    // 如果有待打开的文件（URL 参数指定但 token 还没输入时缓存的）
-    if (window._pendingFile) {
-      await openFile(window._pendingFile);
-      window._pendingFile = null;
-    }
-  } catch(e) {
-    showToast(`加载失败: ${e.message}`);
-  } finally {
-    btn.textContent = '加载文档列表';
-    btn.disabled = false;
-  }
+async function ghWrite(path, content, message, sha) {
+  const token = ghToken || localStorage.getItem('pico_gh_token');
+  if (!token) { showTokenModal(); return false; }
+  const body = {
+    message,
+    content: btoa(unescape(encodeURIComponent(content))),
+    branch: BRANCH
+  };
+  if (sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
 }
 
-function renderFileList(files) {
-  const list = document.getElementById('file-list');
-  list.innerHTML = '';
-
-  // PRD 文件优先
-  const sorted = [...files].sort((a, b) => {
-    const aIsPRD = a.path.startsWith('PRD_');
-    const bIsPRD = b.path.startsWith('PRD_');
-    if (aIsPRD && !bIsPRD) return -1;
-    if (!aIsPRD && bIsPRD) return 1;
-    return a.path.localeCompare(b.path);
-  });
-
-  sorted.forEach(f => {
-    const item = document.createElement('div');
-    item.className = 'file-item';
-    item.dataset.path = f.path;
-
-    const count = (annotations[f.path] || []).filter(a => !a.resolved).length;
-    const badge = count > 0 ? `<span class="badge">${count} 条批注</span>` : '';
-
-    item.innerHTML = `
-      <div class="fname">${f.path.replace('.md', '')}</div>
-      ${badge}
-    `;
-    item.onclick = () => openFile(f.path);
-    list.appendChild(item);
-  });
-}
-
+// ===== 打开文件 =====
 async function openFile(path) {
+  showToast('加载中…');
   const data = await ghFetch(path);
   if (!data) return;
 
   currentFile = path;
-  // 正确解码 UTF-8 base64（atob 不支持多字节中文）
   const b64 = data.content.replace(/\n/g, '');
   const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
   currentFileContent = new TextDecoder('utf-8').decode(bytes);
-
-  // 更新侧边栏选中状态
-  document.querySelectorAll('.file-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.path === path);
-  });
+  window._fileSha = data.sha;
 
   // 渲染 Markdown
   const html = marked.parse(currentFileContent);
   const docContent = document.getElementById('doc-content');
   docContent.innerHTML = html;
   docContent.style.display = 'block';
+  docContent.contentEditable = 'false';
   document.getElementById('doc-placeholder').style.display = 'none';
   document.getElementById('doc-title').textContent = path.replace('.md', '');
 
-  // 恢复已有高亮
+  // 显示相关按钮
+  document.getElementById('edit-toggle-btn').style.display = '';
+  document.getElementById('goto-ann-btn').style.display = '';
+
+  // 恢复高亮
   restoreHighlights(path);
   updateAnnotationPanel();
 
-  // 滚动到顶部
   document.getElementById('doc-area').scrollTop = 0;
+  showToast('文档已加载');
+}
+
+// ===== 编辑模式 =====
+function toggleEditMode() {
+  editMode = !editMode;
+  const docContent = document.getElementById('doc-content');
+  const btn = document.getElementById('edit-toggle-btn');
+  const saveBtn = document.getElementById('save-doc-btn');
+
+  if (editMode) {
+    docOriginalHTML = docContent.innerHTML;
+    docContent.contentEditable = 'true';
+    docContent.focus();
+    btn.textContent = '👁 阅读模式';
+    btn.style.borderColor = '#c96bff';
+    btn.style.color = '#c96bff';
+    saveBtn.style.display = '';
+    showToast('已进入编辑模式，可直接修改文档内容');
+  } else {
+    docContent.contentEditable = 'false';
+    btn.textContent = '✏️ 编辑模式';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    saveBtn.style.display = 'none';
+    showToast('已退出编辑模式');
+  }
+}
+
+async function saveDocToGitHub() {
+  if (!currentFile) return;
+  const btn = document.getElementById('save-doc-btn');
+  btn.textContent = '保存中…';
+  btn.disabled = true;
+
+  // 把当前 HTML 转回 Markdown（简单方式：直接保存 innerHTML 的文本内容）
+  // 更好的方式是用 Turndown，但这里我们保存修改后重新渲染
+  // 实际上我们保存的是用户编辑后的 innerText 内容（保持 Markdown 格式）
+  // 由于 contenteditable 会破坏 Markdown 结构，我们直接保存 HTML 转文本
+  const docContent = document.getElementById('doc-content');
+
+  // 用 turndown 转回 Markdown（如果不可用，则提示用户）
+  let mdContent = '';
+  if (window.TurndownService) {
+    const td = new window.TurndownService({ headingStyle: 'atx', bulletListMarker: '-' });
+    mdContent = td.turndown(docContent.innerHTML);
+  } else {
+    // 降级：直接保存 innerHTML（agent 可以读取）
+    mdContent = docContent.innerText;
+  }
+
+  try {
+    const existing = await ghFetch(currentFile);
+    const sha = existing ? existing.sha : window._fileSha;
+    const ok = await ghWrite(currentFile, mdContent, `docs: 用户编辑 ${currentFile}`, sha);
+    if (ok) {
+      currentFileContent = mdContent;
+      showToast('文档已保存到 GitHub ✅');
+    } else {
+      showToast('保存失败，请检查 Token 权限');
+    }
+  } catch(e) {
+    showToast('保存出错: ' + e.message);
+  } finally {
+    btn.textContent = '💾 保存文档修改';
+    btn.disabled = false;
+  }
 }
 
 // ===== 文字选中 =====
 function onTextSelect(e) {
+  // 编辑模式下不显示批注工具栏
+  if (editMode) return;
+
   const selection = window.getSelection();
-  if (!selection || selection.isCollapsed) {
-    hideToolbar();
-    return;
-  }
+  if (!selection || selection.isCollapsed) { hideToolbar(); return; }
 
   const text = selection.toString().trim();
-  if (!text || text.length < 2) {
-    hideToolbar();
-    return;
-  }
+  if (!text || text.length < 2) { hideToolbar(); return; }
 
-  // 确保选中范围在文档内容区
   const docContent = document.getElementById('doc-content');
   const range = selection.getRangeAt(0);
-  if (!docContent.contains(range.commonAncestorContainer)) {
-    hideToolbar();
-    return;
-  }
+  if (!docContent.contains(range.commonAncestorContainer)) { hideToolbar(); return; }
 
-  pendingSelection = {
-    text: text,
-    range: range.cloneRange()
-  };
+  pendingSelection = { text, range: range.cloneRange() };
 
-  // 显示浮动工具栏
   const rect = range.getBoundingClientRect();
   const toolbar = document.getElementById('selection-toolbar');
   toolbar.style.display = 'flex';
-  toolbar.style.left = `${rect.left + rect.width / 2 - 80}px`;
-  toolbar.style.top = `${rect.top - 48}px`;
+  toolbar.style.left = `${Math.max(8, rect.left + rect.width / 2 - 90)}px`;
+  toolbar.style.top = `${rect.top - 52}px`;
 }
 
 function onDocMouseDown(e) {
   const toolbar = document.getElementById('selection-toolbar');
-  if (!toolbar.contains(e.target) && e.target.id !== 'doc-content') {
-    // 延迟隐藏，避免点击按钮时立即消失
+  if (!toolbar.contains(e.target)) {
     setTimeout(() => {
       if (window.getSelection().isCollapsed) hideToolbar();
     }, 100);
+  }
+}
+
+function onKeyDown(e) {
+  // Ctrl+E 切换编辑模式
+  if ((e.ctrlKey || e.metaKey) && e.key === 'e' && currentFile) {
+    e.preventDefault();
+    toggleEditMode();
+  }
+  // Esc 关闭弹窗
+  if (e.key === 'Escape') {
+    closeCommentModal();
+    closeSubmitModal();
+    closeTokenModal();
+    hideToolbar();
   }
 }
 
@@ -969,7 +942,6 @@ function hideToolbar() {
 function addAnnotation() {
   if (!pendingSelection) return;
   hideToolbar();
-
   document.getElementById('comment-quote-preview').textContent =
     `"${pendingSelection.text.length > 100 ? pendingSelection.text.slice(0, 100) + '…' : pendingSelection.text}"`;
   document.getElementById('comment-textarea').value = '';
@@ -996,26 +968,14 @@ function confirmAnnotation() {
 
 function saveAnnotation(comment) {
   if (!pendingSelection || !currentFile) return;
-
   const id = 'ann_' + Date.now();
-  const annotation = {
-    id,
-    quote: pendingSelection.text,
-    comment,
-    resolved: false,
-    timestamp: new Date().toISOString()
-  };
-
+  const annotation = { id, quote: pendingSelection.text, comment, resolved: false, timestamp: new Date().toISOString() };
   if (!annotations[currentFile]) annotations[currentFile] = [];
   annotations[currentFile].push(annotation);
   persistAnnotations();
-
-  // 高亮选中文字
   highlightSelection(pendingSelection.range, id);
   pendingSelection = null;
-
   updateAnnotationPanel();
-  updateFileListBadges();
   showToast(comment ? '批注已添加' : '高亮已添加');
 }
 
@@ -1028,7 +988,6 @@ function highlightSelection(range, id) {
     span.onclick = () => scrollToAnnotationCard(id);
     range.surroundContents(span);
   } catch(e) {
-    // 跨节点选中时 surroundContents 会失败，改用 extractContents
     try {
       const fragment = range.extractContents();
       const span = document.createElement('span');
@@ -1037,51 +996,38 @@ function highlightSelection(range, id) {
       span.onclick = () => scrollToAnnotationCard(id);
       span.appendChild(fragment);
       range.insertNode(span);
-    } catch(e2) {
-      console.warn('高亮失败:', e2);
-    }
+    } catch(e2) { console.warn('高亮失败:', e2); }
   }
 }
 
 function restoreHighlights(filePath) {
   const fileAnnotations = annotations[filePath] || [];
   const docContent = document.getElementById('doc-content');
-
   fileAnnotations.forEach(ann => {
     if (ann.resolved) return;
-    // 在文档中搜索引用文字并高亮
     highlightTextInDoc(docContent, ann.quote, ann.id);
   });
 }
 
 function highlightTextInDoc(container, text, id) {
   if (!text || text.length < 2) return;
-
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
   const nodes = [];
   let node;
   while (node = walker.nextNode()) nodes.push(node);
-
   for (const textNode of nodes) {
     const idx = textNode.textContent.indexOf(text);
     if (idx === -1) continue;
-
-    // 检查是否已经在高亮 span 内
     if (textNode.parentElement.classList.contains('annotation-highlight')) continue;
-
     const range = document.createRange();
     range.setStart(textNode, idx);
     range.setEnd(textNode, idx + text.length);
-
     const span = document.createElement('span');
     span.className = 'annotation-highlight';
     span.dataset.annotationId = id;
     span.onclick = () => scrollToAnnotationCard(id);
-
-    try {
-      range.surroundContents(span);
-    } catch(e) {}
-    break; // 只高亮第一个匹配
+    try { range.surroundContents(span); } catch(e) {}
+    break;
   }
 }
 
@@ -1095,23 +1041,16 @@ function updateAnnotationPanel() {
   document.getElementById('submit-btn').disabled = activeCount === 0;
 
   if (fileAnnotations.length === 0) {
-    list.innerHTML = `
-      <div id="empty-annotations">
-        <div class="icon">✏️</div>
-        <p>选中文档中的文字<br>即可添加批注</p>
-      </div>`;
+    list.innerHTML = `<div id="empty-annotations"><div class="icon">✏️</div><p>选中文字后<br>点击「添加批注」</p></div>`;
     return;
   }
 
   list.innerHTML = '';
-  // 倒序显示（最新在前）
   [...fileAnnotations].reverse().forEach(ann => {
     const card = document.createElement('div');
     card.className = `annotation-card${ann.resolved ? ' resolved' : ''}`;
     card.id = `card_${ann.id}`;
-
     const time = new Date(ann.timestamp).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
     card.innerHTML = `
       <div class="annotation-quote">"${ann.quote.length > 60 ? ann.quote.slice(0, 60) + '…' : ann.quote}"</div>
       <div class="annotation-comment" contenteditable="${ann.resolved ? 'false' : 'true'}"
@@ -1121,17 +1060,14 @@ function updateAnnotationPanel() {
       <div class="annotation-meta">
         <span>${time}</span>
         <div class="annotation-actions">
-          ${!ann.resolved ? `<button class="resolve-btn" onclick="resolveAnnotation('${ann.id}')">✓ 解决</button>` : '<span style="color:#44bb88;font-size:10px">已解决</span>'}
-          <button class="delete-btn" onclick="deleteAnnotation('${ann.id}')">删除</button>
+          ${!ann.resolved ? `<button class="resolve-btn" onclick="resolveAnnotation('${ann.id}')">✓</button>` : '<span style="color:#44bb88;font-size:10px">已解决</span>'}
+          <button class="delete-btn" onclick="deleteAnnotation('${ann.id}')">删</button>
         </div>
-      </div>
-    `;
-
+      </div>`;
     card.onclick = (e) => {
       if (e.target.tagName === 'BUTTON' || e.target.contentEditable === 'true') return;
       scrollToHighlight(ann.id);
     };
-
     list.appendChild(card);
   });
 }
@@ -1139,10 +1075,7 @@ function updateAnnotationPanel() {
 function updateComment(id, text) {
   if (!currentFile || !annotations[currentFile]) return;
   const ann = annotations[currentFile].find(a => a.id === id);
-  if (ann) {
-    ann.comment = text.trim();
-    persistAnnotations();
-  }
+  if (ann) { ann.comment = text.trim(); persistAnnotations(); }
 }
 
 function resolveAnnotation(id) {
@@ -1151,11 +1084,9 @@ function resolveAnnotation(id) {
   if (ann) {
     ann.resolved = true;
     persistAnnotations();
-    // 更新高亮样式
     const el = document.querySelector(`[data-annotation-id="${id}"]`);
     if (el) el.style.opacity = '0.4';
     updateAnnotationPanel();
-    updateFileListBadges();
     showToast('已标记为解决');
   }
 }
@@ -1164,7 +1095,6 @@ function deleteAnnotation(id) {
   if (!currentFile || !annotations[currentFile]) return;
   annotations[currentFile] = annotations[currentFile].filter(a => a.id !== id);
   persistAnnotations();
-  // 移除高亮
   const el = document.querySelector(`[data-annotation-id="${id}"]`);
   if (el) {
     const parent = el.parentNode;
@@ -1172,7 +1102,6 @@ function deleteAnnotation(id) {
     parent.removeChild(el);
   }
   updateAnnotationPanel();
-  updateFileListBadges();
   showToast('批注已删除');
 }
 
@@ -1181,7 +1110,6 @@ function clearResolved() {
   annotations[currentFile] = annotations[currentFile].filter(a => !a.resolved);
   persistAnnotations();
   updateAnnotationPanel();
-  updateFileListBadges();
   showToast('已清除已解决批注');
 }
 
@@ -1189,7 +1117,7 @@ function scrollToHighlight(id) {
   const el = document.querySelector(`[data-annotation-id="${id}"]`);
   if (el) {
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el.style.background = '#ff6b9d88';
+    el.style.background = '#ff6b9d66';
     setTimeout(() => el.style.background = '', 1500);
   }
 }
@@ -1212,54 +1140,29 @@ function scrollToFirstAnnotation() {
 // ===== 提交给 Manus =====
 async function submitAnnotations() {
   if (!currentFile || !annotations[currentFile]) return;
-
   const active = annotations[currentFile].filter(a => !a.resolved);
   if (active.length === 0) { showToast('没有待处理的批注'); return; }
 
-  // 1. 把批注写回 GitHub reviews/ 目录
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = '提交中…';
+  btn.disabled = true;
+
   const reviewPath = `reviews/${currentFile.replace('.md', '')}_review.json`;
   const reviewData = {
     file: currentFile,
     repo: REPO,
     status: 'pending_review',
     submitted_at: new Date().toISOString(),
-    annotations: active.map(ann => ({
-      id: ann.id,
-      quote: ann.quote,
-      comment: ann.comment || '',
-      timestamp: ann.timestamp
-    }))
+    annotations: active.map(ann => ({ id: ann.id, quote: ann.quote, comment: ann.comment || '', timestamp: ann.timestamp }))
   };
 
   let writeSuccess = false;
   try {
-    // 先获取文件的 sha（如果已存在，更新需要 sha）
     const existing = await ghFetch(reviewPath).catch(() => null);
     const sha = existing ? existing.sha : undefined;
+    writeSuccess = await ghWrite(reviewPath, JSON.stringify(reviewData, null, 2), `review: ${currentFile} - ${active.length} annotations`, sha);
+  } catch(e) { console.warn('写回 GitHub 失败:', e); }
 
-    const token = ghToken || localStorage.getItem('pico_gh_token');
-    const body = {
-      message: `review: ${currentFile} - ${active.length} annotations`,
-      content: btoa(unescape(encodeURIComponent(JSON.stringify(reviewData, null, 2)))),
-      branch: BRANCH
-    };
-    if (sha) body.sha = sha;
-
-    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${reviewPath}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    writeSuccess = res.ok;
-  } catch(e) {
-    console.warn('写回 GitHub 失败:', e);
-  }
-
-  // 2. 生成结构化复制文本
   const lines = [
     `# PRD 修改指令`,
     ``,
@@ -1269,9 +1172,7 @@ async function submitAnnotations() {
     `**批注数量**: ${active.length} 条`,
     `**生成时间**: ${new Date().toLocaleString('zh-CN')}`,
     writeSuccess ? `**状态**: 批注已写入 GitHub ✅` : `**状态**: GitHub 写入失败，请手动复制以下内容`,
-    ``,
-    `---`,
-    ``
+    ``, `---`, ``
   ];
 
   active.forEach((ann, i) => {
@@ -1280,29 +1181,24 @@ async function submitAnnotations() {
     lines.push(`**原文引用**:`);
     lines.push(`> ${ann.quote}`);
     lines.push(``);
-    if (ann.comment) {
-      lines.push(`**修改意见**:`);
-      lines.push(ann.comment);
-    } else {
-      lines.push(`**修改意见**: （仅高亮，请根据上下文判断是否需要修改）`);
-    }
+    lines.push(`**修改意见**: ${ann.comment || '（仅高亮，请根据上下文判断）'}`);
     lines.push(``);
     lines.push(`---`);
     lines.push(``);
   });
 
-  lines.push(`> 以上批注由 Pico PRD Review 工具生成。`);
   if (writeSuccess) {
     lines.push(`> Agent 可读取 \`${REPO}/${reviewPath}\` 获取结构化批注数据。`);
   }
 
   document.getElementById('submit-output').textContent = lines.join('\n');
   document.getElementById('submit-modal').classList.add('show');
+
+  btn.textContent = '✅ 提交给 Manus';
+  btn.disabled = false;
 }
 
-function closeSubmitModal() {
-  document.getElementById('submit-modal').classList.remove('show');
-}
+function closeSubmitModal() { document.getElementById('submit-modal').classList.remove('show'); }
 
 function copyOutput() {
   const text = document.getElementById('submit-output').textContent;
@@ -1317,24 +1213,6 @@ function persistAnnotations() {
   localStorage.setItem('pico_annotations', JSON.stringify(annotations));
 }
 
-function updateFileListBadges() {
-  document.querySelectorAll('.file-item').forEach(el => {
-    const path = el.dataset.path;
-    const count = (annotations[path] || []).filter(a => !a.resolved).length;
-    const existing = el.querySelector('.badge');
-    if (count > 0) {
-      if (existing) existing.textContent = `${count} 条批注`;
-      else el.insertAdjacentHTML('beforeend', `<span class="badge">${count} 条批注</span>`);
-    } else {
-      if (existing) existing.remove();
-    }
-  });
-}
-
-function toggleDark() {
-  document.getElementById('doc-area').classList.toggle('dark-mode');
-}
-
 function showToast(msg) {
   const toast = document.getElementById('toast');
   toast.textContent = msg;
@@ -1342,5 +1220,8 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 2500);
 }
 </script>
+
+<!-- Turndown（HTML→Markdown，用于保存编辑后的文档） -->
+<script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.min.js"></script>
 </body>
 </html>
