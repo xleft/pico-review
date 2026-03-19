@@ -137,42 +137,73 @@ body {
   border-left-color: #c96bff44;
 }
 
-/* 划线高亮 */
+/* 已批注文字高亮 */
 .annotation-highlight {
-  background: #ff6b9d33;
-  border-bottom: 2px solid #ff6b9d;
+  background: #ffe066;
+  border-bottom: 2px solid #ffb800;
   cursor: pointer;
   border-radius: 2px;
+  padding: 1px 0;
   transition: background 0.15s;
 }
-.annotation-highlight:hover { background: #ff6b9d55; }
+.annotation-highlight:hover { background: #ffd633; }
 
-/* 选中文字浮动工具栏 */
-#selection-toolbar {
+/* ===== 内联批注输入框 ===== */
+#inline-comment {
   position: fixed;
-  background: #1e1e2e;
-  border: 1px solid #ff6b9d;
-  border-radius: 8px;
-  padding: 6px 10px;
   display: none;
-  gap: 6px;
-  align-items: center;
   z-index: 1000;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  background: #fff;
+  border: 1px solid #ff6b9d;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+  padding: 10px 12px;
+  width: 300px;
+  flex-direction: column;
+  gap: 8px;
 }
-#selection-toolbar button {
-  background: linear-gradient(135deg, #ff6b9d, #c96bff);
-  border: none;
-  border-radius: 5px;
-  padding: 5px 12px;
+#inline-comment.show { display: flex; }
+
+#inline-comment-input {
+  width: 100%;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #333;
+  outline: none;
+  font-family: inherit;
+  resize: none;
+  min-height: 56px;
+  background: #f9f9fb;
+}
+#inline-comment-input:focus { border-color: #ff6b9d; background: #fff; }
+#inline-comment-input::placeholder { color: #bbb; }
+
+#inline-comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+#inline-comment-actions button {
+  border-radius: 6px;
+  padding: 5px 14px;
   font-size: 12px;
-  color: #fff;
   cursor: pointer;
   font-weight: 600;
-  white-space: nowrap;
 }
-#selection-toolbar button:hover { opacity: 0.85; }
-#selection-toolbar .cancel-btn { background: #333; color: #aaa; }
+.inline-confirm-btn {
+  background: linear-gradient(135deg, #ff6b9d, #c96bff);
+  border: none;
+  color: #fff;
+}
+.inline-confirm-btn:hover { opacity: 0.85; }
+.inline-cancel-btn {
+  background: none;
+  border: 1px solid #eee;
+  color: #aaa;
+}
+.inline-cancel-btn:hover { border-color: #ddd; color: #666; }
 
 /* ===== 右侧批注面板 ===== */
 #annotation-panel {
@@ -213,7 +244,7 @@ body {
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 8px;
-  border-left: 3px solid #ff6b9d;
+  border-left: 3px solid #ffb800;
   cursor: pointer;
   transition: border-color 0.15s;
 }
@@ -391,74 +422,6 @@ body {
   cursor: pointer;
 }
 
-/* ===== 批注输入弹窗 ===== */
-#comment-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-#comment-modal.show { display: flex; }
-
-#comment-box {
-  background: #fff;
-  border-radius: 12px;
-  padding: 22px;
-  width: 420px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-  border: 1px solid #ff6b9d22;
-}
-#comment-box h3 { font-size: 14px; color: #ff6b9d; margin-bottom: 10px; font-weight: 700; }
-
-#comment-quote-preview {
-  font-size: 12px;
-  color: #999;
-  font-style: italic;
-  background: #f9f9fb;
-  padding: 8px 12px;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  border-left: 2px solid #ff6b9d;
-  line-height: 1.5;
-  max-height: 80px;
-  overflow-y: auto;
-}
-
-#comment-textarea {
-  width: 100%;
-  background: #f9f9fb;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 13px;
-  color: #333;
-  resize: vertical;
-  min-height: 80px;
-  outline: none;
-  font-family: inherit;
-}
-#comment-textarea:focus { border-color: #ff6b9d; background: #fff; }
-#comment-textarea::placeholder { color: #ccc; }
-
-#comment-modal-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  justify-content: flex-end;
-}
-#comment-modal-actions button {
-  border-radius: 7px;
-  padding: 7px 16px;
-  font-size: 12px;
-  cursor: pointer;
-  font-weight: 600;
-}
-#comment-confirm-btn { background: linear-gradient(135deg, #ff6b9d, #c96bff); border: none; color: #fff; }
-#comment-cancel-btn { background: none; border: 1px solid #eee; color: #aaa; }
-
 /* ===== 提交结果弹窗 ===== */
 #submit-modal {
   position: fixed;
@@ -585,7 +548,7 @@ body {
     <div id="annotation-list">
       <div id="empty-annotations">
         <div class="icon">✏️</div>
-        <p>选中文字后<br>点击「添加批注」</p>
+        <p>选中文字即可批注</p>
       </div>
     </div>
     <div id="panel-footer">
@@ -596,11 +559,13 @@ body {
   </div>
 </div>
 
-<!-- 选中文字浮动工具栏 -->
-<div id="selection-toolbar">
-  <button onclick="addAnnotation()">✏️ 添加批注</button>
-  <button onclick="addHighlightOnly()">🖊 仅高亮</button>
-  <button class="cancel-btn" onclick="hideToolbar()">✕</button>
+<!-- 内联批注输入框（浮动在鼠标旁） -->
+<div id="inline-comment">
+  <textarea id="inline-comment-input" placeholder="写下修改意见…（Enter 提交，Esc 取消）"></textarea>
+  <div id="inline-comment-actions">
+    <button class="inline-cancel-btn" onclick="cancelInlineComment()">取消</button>
+    <button class="inline-confirm-btn" onclick="confirmInlineComment()">添加</button>
+  </div>
 </div>
 
 <!-- Token 弹窗 -->
@@ -614,19 +579,6 @@ body {
     <div id="token-modal-actions">
       <button id="token-skip-btn" onclick="closeTokenModal()">稍后再说</button>
       <button id="token-confirm-btn" onclick="saveToken()">确认连接</button>
-    </div>
-  </div>
-</div>
-
-<!-- 批注输入弹窗 -->
-<div id="comment-modal">
-  <div id="comment-box">
-    <h3>✏️ 添加批注</h3>
-    <div id="comment-quote-preview"></div>
-    <textarea id="comment-textarea" placeholder="写下你的修改意见或问题…（可留空，仅高亮）"></textarea>
-    <div id="comment-modal-actions">
-      <button id="comment-cancel-btn" onclick="closeCommentModal()">取消</button>
-      <button id="comment-confirm-btn" onclick="confirmAnnotation()">确认添加</button>
     </div>
   </div>
 </div>
@@ -674,7 +626,6 @@ window.addEventListener('load', async () => {
 
   // 读取 token
   let savedToken = localStorage.getItem('pico_gh_token') || '';
-  // 去重修复
   if (savedToken.length > 0 && savedToken.length % 2 === 0) {
     const half = savedToken.slice(0, savedToken.length / 2);
     if (half + half === savedToken) savedToken = half;
@@ -688,7 +639,6 @@ window.addEventListener('load', async () => {
       await openFile(filePath);
     }
   } else {
-    // 没有 token：如果有 URL 文件参数，弹出 token 输入框
     if (urlFile) {
       window._pendingFile = urlFile.endsWith('.md') ? urlFile : urlFile + '.md';
       showTokenModal();
@@ -723,7 +673,6 @@ async function saveToken() {
   closeTokenModal();
   showToast('Token 已保存');
 
-  // 如果有待打开的文件
   if (window._pendingFile) {
     await openFile(window._pendingFile);
     window._pendingFile = null;
@@ -799,7 +748,6 @@ async function openFile(path) {
   currentFileContent = new TextDecoder('utf-8').decode(bytes);
   window._fileSha = data.sha;
 
-  // 渲染 Markdown
   const html = marked.parse(currentFileContent);
   const docContent = document.getElementById('doc-content');
   docContent.innerHTML = html;
@@ -808,7 +756,6 @@ async function openFile(path) {
   document.getElementById('doc-placeholder').style.display = 'none';
   document.getElementById('doc-title').textContent = path.replace('.md', '');
 
-  // 显示相关按钮
   document.getElementById('edit-toggle-btn').style.display = '';
   document.getElementById('goto-ann-btn').style.display = '';
 
@@ -852,19 +799,12 @@ async function saveDocToGitHub() {
   btn.textContent = '保存中…';
   btn.disabled = true;
 
-  // 把当前 HTML 转回 Markdown（简单方式：直接保存 innerHTML 的文本内容）
-  // 更好的方式是用 Turndown，但这里我们保存修改后重新渲染
-  // 实际上我们保存的是用户编辑后的 innerText 内容（保持 Markdown 格式）
-  // 由于 contenteditable 会破坏 Markdown 结构，我们直接保存 HTML 转文本
   const docContent = document.getElementById('doc-content');
-
-  // 用 turndown 转回 Markdown（如果不可用，则提示用户）
   let mdContent = '';
   if (window.TurndownService) {
     const td = new window.TurndownService({ headingStyle: 'atx', bulletListMarker: '-' });
     mdContent = td.turndown(docContent.innerHTML);
   } else {
-    // 降级：直接保存 innerHTML（agent 可以读取）
     mdContent = docContent.innerText;
   }
 
@@ -886,86 +826,109 @@ async function saveDocToGitHub() {
   }
 }
 
-// ===== 文字选中 =====
+// ===== 文字选中 → 直接弹出内联输入框 =====
 function onTextSelect(e) {
-  // 编辑模式下不显示批注工具栏
   if (editMode) return;
 
   const selection = window.getSelection();
-  if (!selection || selection.isCollapsed) { hideToolbar(); return; }
+  if (!selection || selection.isCollapsed) return;
 
   const text = selection.toString().trim();
-  if (!text || text.length < 2) { hideToolbar(); return; }
+  if (!text || text.length < 2) return;
 
   const docContent = document.getElementById('doc-content');
   const range = selection.getRangeAt(0);
-  if (!docContent.contains(range.commonAncestorContainer)) { hideToolbar(); return; }
+  if (!docContent.contains(range.commonAncestorContainer)) return;
+
+  // 不要在内联输入框内触发
+  const inlineBox = document.getElementById('inline-comment');
+  if (inlineBox.contains(e.target)) return;
 
   pendingSelection = { text, range: range.cloneRange() };
 
+  // 计算位置：在选区下方弹出
   const rect = range.getBoundingClientRect();
-  const toolbar = document.getElementById('selection-toolbar');
-  toolbar.style.display = 'flex';
-  toolbar.style.left = `${Math.max(8, rect.left + rect.width / 2 - 90)}px`;
-  toolbar.style.top = `${rect.top - 52}px`;
+  const box = document.getElementById('inline-comment');
+  const boxWidth = 300;
+
+  // 水平：居中于选区，但不超出视口
+  let left = rect.left + rect.width / 2 - boxWidth / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - boxWidth - 8));
+
+  // 垂直：选区下方 8px
+  let top = rect.bottom + 8;
+  // 如果下方空间不够（< 150px），则放到选区上方
+  if (window.innerHeight - rect.bottom < 160) {
+    top = rect.top - 130;
+  }
+
+  box.style.left = left + 'px';
+  box.style.top = top + 'px';
+  box.classList.add('show');
+
+  const input = document.getElementById('inline-comment-input');
+  input.value = '';
+  setTimeout(() => input.focus(), 30);
 }
 
 function onDocMouseDown(e) {
-  const toolbar = document.getElementById('selection-toolbar');
-  if (!toolbar.contains(e.target)) {
+  const inlineBox = document.getElementById('inline-comment');
+  // 如果点击的不是内联输入框内部，关闭它
+  if (inlineBox.classList.contains('show') && !inlineBox.contains(e.target)) {
+    // 延迟检查，避免和 mouseup 冲突
     setTimeout(() => {
-      if (window.getSelection().isCollapsed) hideToolbar();
-    }, 100);
+      // 如果此时没有新的选区产生，则关闭
+      if (!pendingSelection) {
+        cancelInlineComment();
+      }
+    }, 200);
   }
 }
 
 function onKeyDown(e) {
+  // 内联输入框中 Enter 提交（不按 Shift）
+  const inlineBox = document.getElementById('inline-comment');
+  if (inlineBox.classList.contains('show') && e.key === 'Enter' && !e.shiftKey) {
+    const input = document.getElementById('inline-comment-input');
+    if (document.activeElement === input) {
+      e.preventDefault();
+      confirmInlineComment();
+      return;
+    }
+  }
+
   // Ctrl+E 切换编辑模式
   if ((e.ctrlKey || e.metaKey) && e.key === 'e' && currentFile) {
     e.preventDefault();
     toggleEditMode();
   }
-  // Esc 关闭弹窗
+  // Esc 关闭
   if (e.key === 'Escape') {
-    closeCommentModal();
+    cancelInlineComment();
     closeSubmitModal();
     closeTokenModal();
-    hideToolbar();
   }
 }
 
-function hideToolbar() {
-  document.getElementById('selection-toolbar').style.display = 'none';
-}
-
-// ===== 添加批注 =====
-function addAnnotation() {
-  if (!pendingSelection) return;
-  hideToolbar();
-  document.getElementById('comment-quote-preview').textContent =
-    `"${pendingSelection.text.length > 100 ? pendingSelection.text.slice(0, 100) + '…' : pendingSelection.text}"`;
-  document.getElementById('comment-textarea').value = '';
-  document.getElementById('comment-modal').classList.add('show');
-  setTimeout(() => document.getElementById('comment-textarea').focus(), 100);
-}
-
-function addHighlightOnly() {
-  if (!pendingSelection) return;
-  hideToolbar();
-  saveAnnotation('');
-}
-
-function closeCommentModal() {
-  document.getElementById('comment-modal').classList.remove('show');
-  pendingSelection = null;
-}
-
-function confirmAnnotation() {
-  const comment = document.getElementById('comment-textarea').value.trim();
+// ===== 内联批注操作 =====
+function confirmInlineComment() {
+  const comment = document.getElementById('inline-comment-input').value.trim();
+  if (!comment) {
+    showToast('请输入批注内容');
+    document.getElementById('inline-comment-input').focus();
+    return;
+  }
   saveAnnotation(comment);
-  closeCommentModal();
+  document.getElementById('inline-comment').classList.remove('show');
 }
 
+function cancelInlineComment() {
+  document.getElementById('inline-comment').classList.remove('show');
+  pendingSelection = null;
+  window.getSelection().removeAllRanges();
+}
+
+// ===== 保存批注 =====
 function saveAnnotation(comment) {
   if (!pendingSelection || !currentFile) return;
   const id = 'ann_' + Date.now();
@@ -976,7 +939,7 @@ function saveAnnotation(comment) {
   highlightSelection(pendingSelection.range, id);
   pendingSelection = null;
   updateAnnotationPanel();
-  showToast(comment ? '批注已添加' : '高亮已添加');
+  showToast('批注已添加');
 }
 
 // ===== 高亮渲染 =====
@@ -1041,7 +1004,7 @@ function updateAnnotationPanel() {
   document.getElementById('submit-btn').disabled = activeCount === 0;
 
   if (fileAnnotations.length === 0) {
-    list.innerHTML = `<div id="empty-annotations"><div class="icon">✏️</div><p>选中文字后<br>点击「添加批注」</p></div>`;
+    list.innerHTML = `<div id="empty-annotations"><div class="icon">✏️</div><p>选中文字即可批注</p></div>`;
     return;
   }
 
@@ -1117,7 +1080,7 @@ function scrollToHighlight(id) {
   const el = document.querySelector(`[data-annotation-id="${id}"]`);
   if (el) {
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el.style.background = '#ff6b9d66';
+    el.style.background = '#ffc107';
     setTimeout(() => el.style.background = '', 1500);
   }
 }
@@ -1181,7 +1144,7 @@ async function submitAnnotations() {
     lines.push(`**原文引用**:`);
     lines.push(`> ${ann.quote}`);
     lines.push(``);
-    lines.push(`**修改意见**: ${ann.comment || '（仅高亮，请根据上下文判断）'}`);
+    lines.push(`**修改意见**: ${ann.comment}`);
     lines.push(``);
     lines.push(`---`);
     lines.push(``);
